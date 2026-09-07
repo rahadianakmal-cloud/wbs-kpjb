@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — WBS KPJB</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F4EF; --navy:#182644; --navy-deep:#101A2E;
+    --gold:#B4842A; --ink:#20242C; --ink-soft:#5B5F6A; --line:#DAD4C6; --brick:#8C3B2E;
+    --serif:'Source Serif 4',serif; --sans:'IBM Plex Sans',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);}
+  header{background:var(--navy-deep);color:#EDEAE0;padding:16px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--gold);}
+  header h1{font-family:var(--serif);font-size:18px;margin:0;font-weight:600;}
+  header button{background:none;border:1px solid rgba(237,234,224,.4);color:#EDEAE0;padding:7px 14px;border-radius:2px;font-size:13px;cursor:pointer;}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px;}
+
+  /* login */
+  #loginBox{max-width:360px;margin:80px auto;background:#fff;border:1px solid var(--line);padding:32px;border-radius:2px;}
+  #loginBox h2{font-family:var(--serif);font-size:20px;margin:0 0 6px;}
+  #loginBox p{font-size:13.5px;color:var(--ink-soft);margin:0 0 22px;}
+  #loginBox label{font-size:13px;font-weight:500;display:block;margin-bottom:6px;}
+  #loginBox input{width:100%;padding:10px 12px;border:1px solid #C9C2AE;border-radius:2px;margin-bottom:16px;font-size:14px;}
+  #loginBox button{width:100%;background:var(--gold);border:none;color:var(--navy-deep);padding:11px;border-radius:2px;font-weight:500;cursor:pointer;}
+  #loginErr{color:var(--brick);font-size:13px;margin-top:10px;}
+
+  /* dashboard */
+  #dash{display:none;}
+  .stats{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap;}
+  .stat{background:#fff;border:1px solid var(--line);padding:16px 20px;border-radius:2px;min-width:120px;}
+  .stat .n{font-family:var(--serif);font-size:26px;color:var(--navy);}
+  .stat .l{font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;}
+
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);}
+  th,td{text-align:left;padding:11px 14px;font-size:13.5px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{background:var(--navy);color:#EDEAE0;font-weight:500;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;}
+  tr:hover td{background:#FBFAF6;}
+  .case-no{font-family:var(--mono);font-size:12px;color:var(--gold);}
+  select.statusSel{font-family:var(--sans);font-size:12.5px;padding:5px 8px;border:1px solid #C9C2AE;border-radius:2px;}
+  .expand{cursor:pointer;color:var(--navy);text-decoration:underline;font-size:12.5px;background:none;border:none;padding:0;}
+  .detail-row td{background:#FBFAF6;font-size:13px;line-height:1.6;}
+  .detail-row{display:none;}
+  .detail-row.show{display:table-row;}
+  .empty{padding:40px;text-align:center;color:var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>WBS KPJB — Dashboard Admin</h1>
+  <button id="logoutBtn" style="display:none;">Keluar</button>
+</header>
+
+<div class="wrap">
+
+  <div id="loginBox">
+    <h2>Masuk sebagai Admin</h2>
+    <p>Hanya akun terdaftar yang dapat melihat laporan pengaduan.</p>
+    <label>Email</label>
+    <input type="email" id="loginEmail">
+    <label>Password</label>
+    <input type="password" id="loginPassword">
+    <button id="loginBtn">Masuk</button>
+    <div id="loginErr"></div>
+  </div>
+
+  <div id="dash">
+    <div class="stats">
+      <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Total Laporan</div></div>
+      <div class="stat"><div class="n" id="statBaru">0</div><div class="l">Baru</div></div>
+      <div class="stat"><div class="n" id="statProses">0</div><div class="l">Diproses</div></div>
+      <div class="stat"><div class="n" id="statSelesai">0</div><div class="l">Selesai</div></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>No. Kasus</th>
+          <th>Tanggal</th>
+          <th>Terlapor</th>
+          <th>Kriteria</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="reportsBody"></tbody>
+    </table>
+    <div id="emptyState" class="empty" style="display:none;">Belum ada laporan masuk.</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  // Samakan dengan nilai di index.html
+  const SUPABASE_URL = "https://knjllnemepisztoicfhb.supabase.co/rest/v1/";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuamxsbmVtZXBpc3p0b2ljZmhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjIwODIsImV4cCI6MjEwNDMzODA4Mn0.Vl9QRbZTR0E_W8cpd2EsEVvc6ipC0QQAjQMxvTunSAo";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const loginBox = document.getElementById('loginBox');
+  const dash = document.getElementById('dash');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      document.getElementById('loginErr').textContent = 'Login gagal: ' + error.message;
+    } else {
+      showDashboard();
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    await sb.auth.signOut();
+    location.reload();
+  });
+
+  async function showDashboard() {
+    loginBox.style.display = 'none';
+    dash.style.display = 'block';
+    logoutBtn.style.display = 'inline-block';
+    await loadReports();
+  }
+
+  async function loadReports() {
+    const { data, error } = await sb.from('reports').select('*').order('created_at', { ascending: false });
+    if (error) {
+      alert('Gagal memuat laporan: ' + error.message);
+      return;
+    }
+    renderStats(data);
+    renderTable(data);
+  }
+
+  function renderStats(data) {
+    document.getElementById('statTotal').textContent = data.length;
+    document.getElementById('statBaru').textContent = data.filter(r => r.status === 'baru').length;
+    document.getElementById('statProses').textContent = data.filter(r => r.status === 'diproses').length;
+    document.getElementById('statSelesai').textContent = data.filter(r => r.status === 'selesai').length;
+  }
+
+  function renderTable(data) {
+    const body = document.getElementById('reportsBody');
+    body.innerHTML = '';
+    document.getElementById('emptyState').style.display = data.length ? 'none' : 'block';
+
+    data.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="case-no">${r.case_number}</td>
+        <td>${new Date(r.created_at).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'})}</td>
+        <td>${escapeHtml(r.nama_terlapor)}</td>
+        <td>${escapeHtml(r.kriteria_pelanggaran)}</td>
+        <td>
+          <select class="statusSel" data-id="${r.id}">
+            <option value="baru" ${r.status==='baru'?'selected':''}>Baru</option>
+            <option value="diproses" ${r.status==='diproses'?'selected':''}>Diproses</option>
+            <option value="selesai" ${r.status==='selesai'?'selected':''}>Selesai</option>
+            <option value="ditolak" ${r.status==='ditolak'?'selected':''}>Ditolak</option>
+          </select>
+        </td>
+        <td><button class="expand">Detail</button></td>
+      `;
+      const detailTr = document.createElement('tr');
+      detailTr.className = 'detail-row';
+      detailTr.innerHTML = `
+        <td colspan="6">
+          <strong>Pelapor:</strong> ${escapeHtml(r.nama_pelapor)} — ${escapeHtml(r.email_pelapor)} — ${escapeHtml(r.no_hp_pelapor)}<br>
+          <strong>Alamat pelapor:</strong> ${escapeHtml(r.alamat_pelapor)}<br>
+          <strong>Jabatan terlapor:</strong> ${escapeHtml(r.jabatan_terlapor || '-')}<br>
+          <strong>Waktu & lokasi:</strong> ${escapeHtml(r.waktu_kejadian)} — ${escapeHtml(r.lokasi_kejadian)}<br>
+          <strong>Saksi mata:</strong> ${escapeHtml(r.saksi_mata || '-')}<br>
+          <strong>Pihak terlibat:</strong> ${escapeHtml(r.pihak_terlibat || '-')}<br>
+          <strong>Frekuensi:</strong> ${escapeHtml(r.frekuensi_kejadian)}<br>
+          <strong>Kronologi:</strong><br>${escapeHtml(r.kronologi).replace(/\n/g,'<br>')}
+        </td>
+      `;
+      tr.querySelector('.expand').addEventListener('click', () => {
+        detailTr.classList.toggle('show');
+      });
+      tr.querySelector('.statusSel').addEventListener('change', async (e) => {
+        const { error } = await sb.from('reports').update({ status: e.target.value }).eq('id', r.id);
+        if (error) alert('Gagal memperbarui status: ' + error.message);
+      });
+      body.appendChild(tr);
+      body.appendChild(detailTr);
+    });
+  }
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // Cek jika sudah login sebelumnya (session tersimpan)
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) showDashboard();
+  });
+</script>
+
+</body>
+</html>
