@@ -258,15 +258,9 @@ fieldset{border:none;padding:0;margin:0;}
           <input type="email" name="email_pelapor" required>
         </div>
       </div>
-      <div class="row2">
-        <div class="field">
-          <label>No. HP Pelapor <span class="req">*</span></label>
-          <input type="tel" name="no_hp_pelapor" required>
-        </div>
-        <div class="field">
-          <label>Alamat <span class="req">*</span></label>
-          <input type="text" name="alamat_pelapor" required>
-        </div>
+      <div class="field">
+        <label>No. HP Pelapor <span class="req">*</span></label>
+        <input type="tel" name="no_hp_pelapor" required>
       </div>
       <div class="row2">
         <div class="field">
@@ -356,7 +350,7 @@ fieldset{border:none;padding:0;margin:0;}
   // Project Settings > API > Project URL & anon public key
   // "anon key" AMAN dipakai di frontend selama Row Level Security aktif.
   // ================================================================
-  const SUPABASE_URL = "https://knjllnemepisztoicfhb.supabase.co/rest/v1/";
+  const SUPABASE_URL = "https://knjllnemepisztoicfhb.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuamxsbmVtZXBpc3p0b2ljZmhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjIwODIsImV4cCI6MjEwNDMzODA4Mn0.Vl9QRbZTR0E_W8cpd2EsEVvc6ipC0QQAjQMxvTunSAo";
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
