@@ -141,7 +141,20 @@
   .field textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(24,38,68,.08);}
   .field textarea{resize:vertical;min-height:100px;font-family:var(--sans);}
   .field .hint{font-size:12.5px;color:var(--ink-soft);margin-top:5px;}
-  fieldset{border:none;padding:0;margin:0;}
+ .field input[type=file]{
+  padding:9px 10px;background:#fff;font-size:13.5px;
+}
+.file-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;}
+.file-list li{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:#fff;border:1px solid #C9C2AE;border-radius:2px;padding:8px 12px;
+  font-size:13px;color:var(--ink-soft);
+}
+.file-list li button{
+  border:none;background:none;color:var(--brick);cursor:pointer;font-size:12.5px;
+  text-decoration:underline;padding:0;
+}
+fieldset{border:none;padding:0;margin:0;}
 
   .submit-row{display:flex;align-items:center;gap:16px;margin-top:8px;}
   .submit-row .btn-gold{border:none;font-size:15px;padding:13px 30px;}
@@ -314,6 +327,13 @@
         </select>
       </div>
 
+      <div class="field">
+  <label>Bukti Pendukung</label>
+  <input type="file" id="buktiInput" multiple accept="image/*,.pdf,.doc,.docx">
+  <div class="hint">Opsional. Foto, dokumen, atau rekaman terkait kejadian. Maks. 5 file, masing-masing maks. 10MB.</div>
+  <ul id="fileList" class="file-list"></ul>
+</div>
+      
       <div class="submit-row">
         <button type="submit" class="btn btn-gold" id="submitBtn">Kirim Laporan</button>
         <span id="formMsg"></span>
@@ -344,6 +364,56 @@
   const form = document.getElementById('reportForm');
   const btn = document.getElementById('submitBtn');
   const msg = document.getElementById('formMsg');
+  const buktiInput = document.getElementById('buktiInput');
+  const fileListEl = document.getElementById('fileList');
+
+  const MAX_FILES = 5;
+  const MAX_SIZE_MB = 10;
+  let selectedFiles = [];
+
+  buktiInput.addEventListener('change', () => {
+    for (const f of buktiInput.files) {
+      if (selectedFiles.length >= MAX_FILES) {
+        alert('Maksimal ' + MAX_FILES + ' file.');
+        break;
+      }
+      if (f.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert(f.name + ' melebihi ' + MAX_SIZE_MB + 'MB, dilewati.');
+        continue;
+      }
+      selectedFiles.push(f);
+    }
+    buktiInput.value = '';
+    renderFileList();
+  });
+
+  function renderFileList() {
+    fileListEl.innerHTML = '';
+    selectedFiles.forEach((f, i) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${f.name} (${(f.size/1024/1024).toFixed(1)} MB)</span>`;
+      const rm = document.createElement('button');
+      rm.type = 'button';
+      rm.textContent = 'Hapus';
+      rm.addEventListener('click', () => { selectedFiles.splice(i, 1); renderFileList(); });
+      li.appendChild(rm);
+      fileListEl.appendChild(li);
+    });
+  }
+
+  async function uploadFiles(uploadId) {
+    const uploaded = [];
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const f = selectedFiles[i];
+      msg.textContent = `Mengunggah file ${i + 1} dari ${selectedFiles.length}...`;
+      const safeName = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `${uploadId}/${Date.now()}_${safeName}`;
+      const { error } = await sb.storage.from('bukti-laporan').upload(path, f);
+      if (error) throw new Error('Gagal mengunggah ' + f.name + ': ' + error.message);
+      uploaded.push({ name: f.name, path });
+    }
+    return uploaded;
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -352,20 +422,26 @@
     btn.disabled = true;
     btn.textContent = 'Mengirim...';
 
-    const fd = new FormData(form);
-    const payload = Object.fromEntries(fd.entries());
+    try {
+      const uploadId = crypto.randomUUID();
+      const bukti_files = selectedFiles.length ? await uploadFiles(uploadId) : [];
 
-    const { error } = await sb.from('reports').insert(payload);
+      const fd = new FormData(form);
+      const payload = Object.fromEntries(fd.entries());
+      payload.bukti_files = bukti_files;
 
-    if (error) {
-      msg.textContent = 'Gagal mengirim laporan. Silakan coba lagi. (' + error.message + ')';
-      msg.className = 'err';
-      btn.disabled = false;
-      btn.textContent = 'Kirim Laporan';
-    } else {
+      const { error } = await sb.from('reports').insert(payload);
+      if (error) throw new Error(error.message);
+
       form.reset();
+      selectedFiles = [];
+      renderFileList();
       msg.textContent = 'Laporan berhasil dikirim. Terima kasih atas kepedulianmu.';
       msg.className = 'ok';
+    } catch (err) {
+      msg.textContent = 'Gagal mengirim laporan. Silakan coba lagi. (' + err.message + ')';
+      msg.className = 'err';
+    } finally {
       btn.disabled = false;
       btn.textContent = 'Kirim Laporan';
     }
