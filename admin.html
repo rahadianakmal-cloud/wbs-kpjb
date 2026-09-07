@@ -176,12 +176,16 @@
           <strong>Saksi mata:</strong> ${escapeHtml(r.saksi_mata || '-')}<br>
           <strong>Pihak terlibat:</strong> ${escapeHtml(r.pihak_terlibat || '-')}<br>
           <strong>Frekuensi:</strong> ${escapeHtml(r.frekuensi_kejadian)}<br>
-          <strong>Kronologi:</strong><br>${escapeHtml(r.kronologi).replace(/\n/g,'<br>')}
-        </td>
-      `;
-      tr.querySelector('.expand').addEventListener('click', () => {
-        detailTr.classList.toggle('show');
-      });
+<strong>Kronologi:</strong><br>${escapeHtml(r.kronologi).replace(/\n/g,'<br>')}<br><br>
+<strong>Bukti pendukung:</strong> <span class="bukti-links" data-files='${JSON.stringify(r.bukti_files || [])}'>${(r.bukti_files && r.bukti_files.length) ? '(klik Detail untuk buka file)' : 'Tidak ada'}</span>
+</td>
+`;
+tr.querySelector('.expand').addEventListener('click', async () => {
+  detailTr.classList.toggle('show');
+  if (detailTr.classList.contains('show')) {
+    await renderBuktiLinks(detailTr);
+  }
+});
       tr.querySelector('.statusSel').addEventListener('change', async (e) => {
         const { error } = await sb.from('reports').update({ status: e.target.value }).eq('id', r.id);
         if (error) alert('Gagal memperbarui status: ' + error.message);
@@ -190,7 +194,26 @@
       body.appendChild(detailTr);
     });
   }
-
+async function renderBuktiLinks(detailTr) {
+  const span = detailTr.querySelector('.bukti-links');
+  const files = JSON.parse(span.dataset.files || '[]');
+  if (!files.length) return;
+  span.innerHTML = '';
+  for (const f of files) {
+    const a = document.createElement('a');
+    a.href = '#';
+    a.textContent = f.name;
+    a.style.marginRight = '14px';
+    a.style.color = 'var(--navy)';
+    a.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const { data, error } = await sb.storage.from('bukti-laporan').createSignedUrl(f.path, 120);
+      if (error) { alert('Gagal membuka file: ' + error.message); return; }
+      window.open(data.signedUrl, '_blank');
+    });
+    span.appendChild(a);
+  }
+}
   function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
