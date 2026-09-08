@@ -400,11 +400,19 @@ fieldset{border:none;padding:0;margin:0;}
     for (let i = 0; i < selectedFiles.length; i++) {
       const f = selectedFiles[i];
       msg.textContent = `Mengunggah file ${i + 1} dari ${selectedFiles.length}...`;
-      const safeName = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const path = `${uploadId}/${Date.now()}_${safeName}`;
-      const { error } = await sb.storage.from('bukti-laporan').upload(path, f);
-      if (error) throw new Error('Gagal mengunggah ' + f.name + ': ' + error.message);
-      uploaded.push({ name: f.name, path });
+
+      const fd = new FormData();
+      fd.append('file', f);
+      fd.append('uploadId', uploadId);
+
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/upload-bukti`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON_KEY },
+        body: fd,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error('Gagal mengunggah ' + f.name + ': ' + (json.error || res.statusText));
+      uploaded.push({ name: json.name, path: json.path });
     }
     return uploaded;
   }
