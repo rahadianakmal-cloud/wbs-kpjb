@@ -44,11 +44,8 @@
     display:flex;align-items:center;justify-content:space-between;
   }
   .brand{display:flex;align-items:center;gap:12px;}
-  .brand-mark{
-    width:38px;height:38px;border:1.5px solid var(--gold);border-radius:2px;
-    display:flex;align-items:center;justify-content:center;
-    font-family:var(--serif);font-weight:700;font-size:15px;color:var(--gold);
-    flex-shrink:0;
+  .brand-logo{
+    height:42px;width:auto;flex-shrink:0;
   }
   .brand-name{font-size:13.5px;letter-spacing:.02em;color:#C9C4B4;}
   .brand-name strong{display:block;font-family:var(--serif);font-size:16px;color:#F4F1E8;font-weight:600;}
@@ -141,20 +138,20 @@
   .field textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(24,38,68,.08);}
   .field textarea{resize:vertical;min-height:100px;font-family:var(--sans);}
   .field .hint{font-size:12.5px;color:var(--ink-soft);margin-top:5px;}
- .field input[type=file]{
-  padding:9px 10px;background:#fff;font-size:13.5px;
-}
-.file-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;}
-.file-list li{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  background:#fff;border:1px solid #C9C2AE;border-radius:2px;padding:8px 12px;
-  font-size:13px;color:var(--ink-soft);
-}
-.file-list li button{
-  border:none;background:none;color:var(--brick);cursor:pointer;font-size:12.5px;
-  text-decoration:underline;padding:0;
-}
-fieldset{border:none;padding:0;margin:0;}
+  .field input[type=file]{
+    padding:9px 10px;background:#fff;font-size:13.5px;
+  }
+  .file-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  .file-list li{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:#fff;border:1px solid #C9C2AE;border-radius:2px;padding:8px 12px;
+    font-size:13px;color:var(--ink-soft);
+  }
+  .file-list li button{
+    border:none;background:none;color:var(--brick);cursor:pointer;font-size:12.5px;
+    text-decoration:underline;padding:0;
+  }
+  fieldset{border:none;padding:0;margin:0;}
 
   .submit-row{display:flex;align-items:center;gap:16px;margin-top:8px;}
   .submit-row .btn-gold{border:none;font-size:15px;padding:13px 30px;}
@@ -167,6 +164,7 @@ fieldset{border:none;padding:0;margin:0;}
   footer{background:var(--navy-deep);color:#9B9686;padding:36px 0;font-size:13px;}
   footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;}
   footer strong{color:#D8D3C4;font-family:var(--serif);font-weight:600;}
+  footer .tagline{display:inline-block;margin-top:6px;color:var(--gold);letter-spacing:.03em;font-size:12.5px;}
 
   @media (max-width:720px){
     .row2{grid-template-columns:1fr;}
@@ -180,7 +178,7 @@ fieldset{border:none;padding:0;margin:0;}
 <header>
   <div class="header-inner">
     <div class="brand">
-      <div class="brand-mark">K</div>
+      <img src="assets/logo-kpjb.png" alt="Logo PT KPJB" class="brand-logo">
       <div class="brand-name">PT KPJB<strong>Whistleblowing System</strong></div>
     </div>
     <nav>
@@ -258,9 +256,15 @@ fieldset{border:none;padding:0;margin:0;}
           <input type="email" name="email_pelapor" required>
         </div>
       </div>
-      <div class="field">
-        <label>No. HP Pelapor <span class="req">*</span></label>
-        <input type="tel" name="no_hp_pelapor" required>
+      <div class="row2">
+        <div class="field">
+          <label>No. HP Pelapor <span class="req">*</span></label>
+          <input type="tel" name="no_hp_pelapor" required>
+        </div>
+        <div class="field">
+          <label>Alamat <span class="req">*</span></label>
+          <input type="text" name="alamat_pelapor" required>
+        </div>
       </div>
       <div class="row2">
         <div class="field">
@@ -322,12 +326,12 @@ fieldset{border:none;padding:0;margin:0;}
       </div>
 
       <div class="field">
-  <label>Bukti Pendukung</label>
-  <input type="file" id="buktiInput" multiple accept="image/*,.pdf,.doc,.docx">
-  <div class="hint">Opsional. Foto, dokumen, atau rekaman terkait kejadian. Maks. 5 file, masing-masing maks. 10MB.</div>
-  <ul id="fileList" class="file-list"></ul>
-</div>
-      
+        <label>Bukti Pendukung</label>
+        <input type="file" id="buktiInput" multiple accept="image/*,.pdf,.doc,.docx">
+        <div class="hint">Opsional. Foto, dokumen, atau rekaman terkait kejadian. Maks. 5 file, masing-masing maks. 10MB.</div>
+        <ul id="fileList" class="file-list"></ul>
+      </div>
+
       <div class="submit-row">
         <button type="submit" class="btn btn-gold" id="submitBtn">Kirim Laporan</button>
         <span id="formMsg"></span>
@@ -338,7 +342,7 @@ fieldset{border:none;padding:0;margin:0;}
 
 <footer>
   <div class="wrap">
-    <div><strong>PT Komipo Pembangkitan Jawa Bali</strong><br>PLTU Tanjung Jati B Unit 3&4, Sekuping, Tubanan, Kec. Kembang, Kabupaten Jepara, Jawa Tengah 59453</div>
+    <div><strong>PT Komipo Pembangkitan Jawa Bali</strong><br>PLTU Tanjung Jati B Unit 3&4, Sekuping, Tubanan, Kec. Kembang, Kabupaten Jepara, Jawa Tengah 59453<br><span class="tagline">A World Class Power Plant Operation &amp; Maintenance</span></div>
     <div>&copy; 2026 WBS KPJB</div>
   </div>
 </footer>
