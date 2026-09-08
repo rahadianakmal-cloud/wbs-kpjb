@@ -95,8 +95,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
   // Samakan dengan nilai di index.html
-  const SUPABASE_URL = "https://knjllnemepisztoicfhb.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuamxsbmVtZXBpc3p0b2ljZmhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjIwODIsImV4cCI6MjEwNDMzODA4Mn0.Vl9QRbZTR0E_W8cpd2EsEVvc6ipC0QQAjQMxvTunSAo";
+  const SUPABASE_URL = "https://xxxxxxxxxxxx.supabase.co";
+  const SUPABASE_ANON_KEY = "PASTE_ANON_PUBLIC_KEY_DI_SINI";
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const loginBox = document.getElementById('loginBox');
@@ -175,11 +175,15 @@
           <strong>Saksi mata:</strong> ${escapeHtml(r.saksi_mata || '-')}<br>
           <strong>Pihak terlibat:</strong> ${escapeHtml(r.pihak_terlibat || '-')}<br>
           <strong>Frekuensi:</strong> ${escapeHtml(r.frekuensi_kejadian)}<br>
-          <strong>Kronologi:</strong><br>${escapeHtml(r.kronologi).replace(/\n/g,'<br>')}
+          <strong>Kronologi:</strong><br>${escapeHtml(r.kronologi).replace(/\n/g,'<br>')}<br><br>
+          <strong>Bukti pendukung:</strong> <span class="bukti-links" data-files='${JSON.stringify(r.bukti_files || [])}'>${(r.bukti_files && r.bukti_files.length) ? '(klik Detail untuk buka file)' : 'Tidak ada'}</span>
         </td>
       `;
-      tr.querySelector('.expand').addEventListener('click', () => {
+      tr.querySelector('.expand').addEventListener('click', async () => {
         detailTr.classList.toggle('show');
+        if (detailTr.classList.contains('show')) {
+          await renderBuktiLinks(detailTr);
+        }
       });
       tr.querySelector('.statusSel').addEventListener('change', async (e) => {
         const { error } = await sb.from('reports').update({ status: e.target.value }).eq('id', r.id);
@@ -188,6 +192,27 @@
       body.appendChild(tr);
       body.appendChild(detailTr);
     });
+  }
+
+  async function renderBuktiLinks(detailTr) {
+    const span = detailTr.querySelector('.bukti-links');
+    const files = JSON.parse(span.dataset.files || '[]');
+    if (!files.length) return;
+    span.innerHTML = '';
+    for (const f of files) {
+      const a = document.createElement('a');
+      a.href = '#';
+      a.textContent = f.name;
+      a.style.marginRight = '14px';
+      a.style.color = 'var(--navy)';
+      a.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const { data, error } = await sb.storage.from('bukti-laporan').createSignedUrl(f.path, 120);
+        if (error) { alert('Gagal membuka file: ' + error.message); return; }
+        window.open(data.signedUrl, '_blank');
+      });
+      span.appendChild(a);
+    }
   }
 
   function escapeHtml(str) {
