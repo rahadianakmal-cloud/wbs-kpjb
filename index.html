@@ -258,7 +258,8 @@
       </div>
       <div class="field">
         <label>No. HP Pelapor <span class="req">*</span></label>
-        <input type="tel" name="no_hp_pelapor" required>
+        <input type="tel" name="no_hp_pelapor" required pattern="(\+62|62|0)8[0-9]{8,12}" title="Format: diawali 08 atau +62, contoh: 081234567890" placeholder="08xxxxxxxxxx">
+        <div class="hint">Format: 08xxxxxxxxxx atau +62xxxxxxxxxx</div>
       </div>
       <div class="row2">
         <div class="field">
