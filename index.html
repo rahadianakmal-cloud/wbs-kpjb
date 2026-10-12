@@ -255,6 +255,34 @@
   #formMsg.ok{color:#7DE0A0;}
   #formMsg.err{color:#FF8A98;}
 
+    /* ---------- Tabs jenis laporan ---------- */
+  .tabs{
+    display:flex;gap:4px;margin-bottom:14px;
+    border-bottom:1px solid rgba(255,255,255,.2);
+  }
+  .tab{
+    cursor:pointer;font-family:var(--sans);font-size:15px;font-weight:500;
+    color:var(--glass-muted);background:none;border:none;
+    border-bottom:3px solid transparent;margin-bottom:-1px;
+    padding:14px 22px;border-radius:12px 12px 0 0;
+    transition:color .2s,background .2s,border-color .2s;
+  }
+  .tab:hover{color:#fff;background:rgba(255,255,255,.07);}
+  .tab:focus-visible{outline:2px solid var(--sky);outline-offset:-2px;}
+  .tab small{font-size:12.5px;font-weight:400;opacity:.85;}
+  .tab[aria-selected="true"]{
+    color:#fff;background:rgba(82,186,236,.12);border-bottom-color:var(--sky);
+  }
+  .tab-desc{margin:0 0 22px;font-size:13.5px;color:var(--glass-muted);}
+  [hidden]{display:none !important;}
+  .form-group-title{
+    font-family:var(--mono);font-size:12px;color:var(--sky);text-transform:uppercase;
+    letter-spacing:.06em;margin:6px 0 -6px;padding-top:18px;border-top:1px solid rgba(255,255,255,.12);
+  }
+  .form-group-title.first{border-top:none;padding-top:0;margin-top:0;}
+  .check{display:flex;gap:12px;align-items:flex-start;font-size:13.5px;color:var(--glass-text);line-height:1.5;cursor:pointer;}
+  .check input{width:20px;height:20px;margin-top:1px;accent-color:var(--sky);flex-shrink:0;cursor:pointer;}
+
   /* ---------- Footer ---------- */
   footer{background:#0A1633;border-top:1px solid rgba(255,255,255,.1);color:var(--glass-muted);padding:36px 0;font-size:13px;}
   footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;}
@@ -268,6 +296,8 @@
     .glass-zone::after{width:360px;height:360px;}
   }
   @media (max-width:720px){
+    .tab{flex:1;padding:12px 8px;font-size:14px;text-align:center;}
+    .tab small{display:block;}
     .row2{grid-template-columns:1fr;}
     .channels{grid-template-columns:1fr;}
     nav{display:none;}
@@ -301,8 +331,8 @@
       <h1>Laporkan pelanggaran yang kamu temukan di lingkungan KPJB</h1>
       <p>Whistleblowing System (WBS) adalah kanal resmi untuk menyampaikan pengaduan terkait gratifikasi, korupsi, kolusi, dan pelanggaran kode etik lain di lingkungan perusahaan. Identitas dan data pelapor dilindungi dan hanya dapat diakses oleh tim pengelola WBS.</p>
       <div class="hero-actions">
-        <a href="#formaduan" class="btn btn-gold">Buat laporan</a>
-        <a href="#kriteria" class="btn btn-outline">Lihat kriteria pelanggaran</a>
+        <a href="#formaduan" class="btn btn-gold" data-tab="aduan">Laporkan pelanggaran</a>
+        <a href="#formaduan" class="btn btn-outline" data-tab="self">Lapor gratifikasi yang saya terima</a>
       </div>
     </div>
 
@@ -366,8 +396,15 @@
 <section id="formaduan">
   <div class="wrap">
     <p class="kicker">Form Laporan</p>
-    <h2>Sampaikan kronologi pelanggaran yang kamu temukan</h2>
+    <h2 id="formTitle">Sampaikan kronologi pelanggaran yang kamu temukan</h2>
 
+    <div class="tabs" role="tablist" aria-label="Jenis laporan">
+      <button type="button" class="tab" role="tab" id="tab-aduan" data-tab="aduan" aria-selected="true" aria-controls="panel-aduan" tabindex="0">Laporkan pelanggaran</button>
+      <button type="button" class="tab" role="tab" id="tab-self" data-tab="self" aria-selected="false" aria-controls="panel-self" tabindex="-1">Lapor gratifikasi <small>(self-report)</small></button>
+    </div>
+    <p class="tab-desc" id="tabDesc"></p>
+
+    <div id="panel-aduan" role="tabpanel" aria-labelledby="tab-aduan">
     <div class="confidential-note">
       Data yang kamu isi hanya dapat diakses oleh tim pengelola WBS yang berwenang. Isi form dengan selengkap dan sejujur mungkin agar laporan dapat ditindaklanjuti.
     </div>
@@ -459,6 +496,135 @@
         <span id="formMsg"></span>
       </div>
     </form>
+    </div>
+
+    <div id="panel-self" role="tabpanel" aria-labelledby="tab-self" hidden>
+    <div class="confidential-note">
+      Gunakan form ini jika kamu sebagai karyawan menerima uang, barang, atau fasilitas yang berpotensi termasuk suap/gratifikasi. Sesuai SOP perusahaan, karyawan dapat melaporkannya dan menyerahkan uang/barang tersebut kepada Tim Anti-Penyuapan. Data hanya dapat diakses oleh tim pengelola yang berwenang.
+    </div>
+
+    <form id="selfForm">
+      <div class="form-group-title first">1. Identitas karyawan</div>
+      <div class="row2">
+        <div class="field">
+          <label>Nama Lengkap <span class="req">*</span></label>
+          <input type="text" name="nama_pelapor" required autocomplete="name">
+        </div>
+        <div class="field">
+          <label>ID Karyawan <span class="req">*</span></label>
+          <input type="text" name="id_karyawan" required>
+        </div>
+      </div>
+      <div class="field">
+        <label>Jabatan / Unit Kerja <span class="req">*</span></label>
+        <input type="text" name="jabatan_unit" required>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>E-mail <span class="req">*</span></label>
+          <input type="email" name="email_pelapor" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label>No. HP <span class="req">*</span></label>
+          <input type="tel" name="no_hp_pelapor" required pattern="(\+62|62|0)8[0-9]{8,12}" title="Format: diawali 08 atau +62, contoh: 081234567890" placeholder="08xxxxxxxxxx" autocomplete="tel">
+        </div>
+      </div>
+
+      <div class="form-group-title">2. Yang diterima</div>
+      <div class="field">
+        <label>Jenis Penerimaan <span class="req">*</span></label>
+        <select name="jenis_penerimaan" required>
+          <option value="" disabled selected>Pilih jenis penerimaan</option>
+          <option>Uang tunai</option>
+          <option>Transfer / dompet digital</option>
+          <option>Barang</option>
+          <option>Voucher / kartu hadiah</option>
+          <option>Fasilitas, jamuan, atau hiburan</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Uraian Uang / Barang <span class="req">*</span></label>
+        <textarea name="deskripsi_penerimaan" required></textarea>
+        <div class="hint">Sebutkan jumlah, jenis, merek, dan kondisinya.</div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Perkiraan Nilai (Rp)</label>
+          <input type="number" name="estimasi_nilai" min="0" step="1" inputmode="numeric" placeholder="cth: 500000">
+          <div class="hint">Kosongkan jika tidak diketahui.</div>
+        </div>
+        <div class="field">
+          <label>Tanggal Penerimaan <span class="req">*</span></label>
+          <input type="date" name="tanggal_penerimaan" id="tglTerima" required>
+        </div>
+      </div>
+      <div class="field">
+        <label>Lokasi Penerimaan <span class="req">*</span></label>
+        <input type="text" name="lokasi_penerimaan" required>
+      </div>
+
+      <div class="form-group-title">3. Pemberi</div>
+      <div class="row2">
+        <div class="field">
+          <label>Nama Pemberi <span class="req">*</span></label>
+          <input type="text" name="nama_pemberi" required>
+          <div class="hint">Isi "Tidak diketahui" jika kamu tidak tahu.</div>
+        </div>
+        <div class="field">
+          <label>Instansi / Perusahaan Pemberi</label>
+          <input type="text" name="instansi_pemberi">
+        </div>
+      </div>
+      <div class="field">
+        <label>Hubungan Pemberi dengan Perusahaan <span class="req">*</span></label>
+        <select name="hubungan_bisnis" required>
+          <option value="" disabled selected>Pilih salah satu</option>
+          <option>Rekanan / vendor / mitra aktif</option>
+          <option>Sedang dalam proses pengadaan atau kerja sama</option>
+          <option>Tidak ada hubungan bisnis</option>
+          <option>Tidak tahu</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Kronologi <span class="req">*</span></label>
+        <textarea name="kronologi" required></textarea>
+        <div class="hint">Ceritakan bagaimana pemberian itu terjadi, apa yang disampaikan pemberi, dan apakah ada permintaan sebagai imbal balik.</div>
+      </div>
+
+      <div class="form-group-title">4. Penanganan uang / barang</div>
+      <div class="field">
+        <label>Kondisi Saat Ini <span class="req">*</span></label>
+        <select name="status_penanganan" required>
+          <option value="" disabled selected>Pilih salah satu</option>
+          <option>Masih saya simpan, akan saya serahkan ke Tim Anti-Penyuapan</option>
+          <option>Sudah saya serahkan ke Tim Anti-Penyuapan</option>
+          <option>Tidak dapat diserahkan (mis. mudah rusak atau sudah habis)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tanggal Penyerahan ke Tim Anti-Penyuapan</label>
+        <input type="date" name="tanggal_penyerahan" id="tglSerah">
+        <div class="hint">Isi hanya jika sudah diserahkan.</div>
+      </div>
+      <div class="field">
+        <label>Bukti Pendukung</label>
+        <input type="file" id="sBuktiInput" multiple accept="image/*,.pdf,.doc,.docx">
+        <div class="hint">Opsional. Foto barang, bukti transfer, atau dokumen terkait. Maks. 5 file, masing-masing maks. 10MB.</div>
+        <ul id="sFileList" class="file-list"></ul>
+      </div>
+
+      <label class="check">
+        <input type="checkbox" name="pernyataan_benar" required>
+        <span>Saya menyatakan bahwa informasi di atas benar dan saya bersedia mengikuti arahan Tim Anti-Penyuapan sesuai SOP perusahaan.</span>
+      </label>
+
+      <div class="submit-row">
+        <button type="submit" class="btn btn-gold" id="sSubmitBtn">Kirim Laporan Mandiri</button>
+        <span id="sFormMsg"></span>
+      </div>
+    </form>
+    </div>
   </div>
 </section>
 
@@ -473,109 +639,181 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-  // ================================================================
-  // GANTI DUA NILAI DI BAWAH INI dengan milikmu dari Supabase Dashboard
-  // Project Settings > API > Project URL & anon public key
-  // "anon key" AMAN dipakai di frontend selama Row Level Security aktif.
-  // ================================================================
+  // Kredensial publik proyek Supabase (anon key AMAN di frontend selama RLS aktif).
   const SUPABASE_URL = "https://knjllnemepisztoicfhb.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuamxsbmVtZXBpc3p0b2ljZmhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjIwODIsImV4cCI6MjEwNDMzODA4Mn0.Vl9QRbZTR0E_W8cpd2EsEVvc6ipC0QQAjQMxvTunSAo";
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const form = document.getElementById('reportForm');
-  const btn = document.getElementById('submitBtn');
-  const msg = document.getElementById('formMsg');
-  const buktiInput = document.getElementById('buktiInput');
-  const fileListEl = document.getElementById('fileList');
-
   const MAX_FILES = 5;
   const MAX_SIZE_MB = 10;
-  let selectedFiles = [];
 
-  buktiInput.addEventListener('change', () => {
-    for (const f of buktiInput.files) {
-      if (selectedFiles.length >= MAX_FILES) {
-        alert('Maksimal ' + MAX_FILES + ' file.');
-        break;
-      }
-      if (f.size > MAX_SIZE_MB * 1024 * 1024) {
-        alert(f.name + ' melebihi ' + MAX_SIZE_MB + 'MB, dilewati.');
-        continue;
-      }
-      selectedFiles.push(f);
+  // ---------- Pemilih file (dipakai kedua form) ----------
+  function createFilePicker(inputEl, listEl) {
+    let files = [];
+
+    function render() {
+      listEl.innerHTML = '';
+      files.forEach((f, i) => {
+        const li = document.createElement('li');
+        const label = document.createElement('span');
+        label.textContent = f.name + ' (' + (f.size / 1024 / 1024).toFixed(1) + ' MB)';
+        const rm = document.createElement('button');
+        rm.type = 'button';
+        rm.textContent = 'Hapus';
+        rm.addEventListener('click', () => { files.splice(i, 1); render(); });
+        li.appendChild(label);
+        li.appendChild(rm);
+        listEl.appendChild(li);
+      });
     }
-    buktiInput.value = '';
-    renderFileList();
-  });
 
-  function renderFileList() {
-    fileListEl.innerHTML = '';
-    selectedFiles.forEach((f, i) => {
-      const li = document.createElement('li');
-      li.innerHTML = `<span>${f.name} (${(f.size/1024/1024).toFixed(1)} MB)</span>`;
-      const rm = document.createElement('button');
-      rm.type = 'button';
-      rm.textContent = 'Hapus';
-      rm.addEventListener('click', () => { selectedFiles.splice(i, 1); renderFileList(); });
-      li.appendChild(rm);
-      fileListEl.appendChild(li);
+    inputEl.addEventListener('change', () => {
+      for (const f of inputEl.files) {
+        if (files.length >= MAX_FILES) { alert('Maksimal ' + MAX_FILES + ' file.'); break; }
+        if (f.size > MAX_SIZE_MB * 1024 * 1024) { alert(f.name + ' melebihi ' + MAX_SIZE_MB + 'MB, dilewati.'); continue; }
+        files.push(f);
+      }
+      inputEl.value = '';
+      render();
+    });
+
+    return {
+      count: () => files.length,
+      clear: () => { files = []; render(); },
+      // Unggah lewat Edge Function (server memvalidasi ukuran & tipe file)
+      async upload(uploadId, onProgress) {
+        const uploaded = [];
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          onProgress('Mengunggah file ' + (i + 1) + ' dari ' + files.length + '...');
+          const fd = new FormData();
+          fd.append('file', f);
+          fd.append('uploadId', uploadId);
+          const res = await fetch(SUPABASE_URL + '/functions/v1/upload-bukti', {
+            method: 'POST',
+            headers: { 'apikey': SUPABASE_ANON_KEY },
+            body: fd,
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error('Gagal mengunggah ' + f.name + ': ' + (json.error || res.statusText));
+          uploaded.push({ name: json.name, path: json.path });
+        }
+        return uploaded;
+      },
+    };
+  }
+
+  // ---------- Pengikat form -> tabel Supabase ----------
+  function bindForm({ formId, table, picker, btnId, msgId, btnText, okText, transform }) {
+    const form = document.getElementById(formId);
+    const btn = document.getElementById(btnId);
+    const msg = document.getElementById(msgId);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      msg.className = '';
+      btn.disabled = true;
+      btn.textContent = 'Mengirim...';
+
+      try {
+        const uploadId = crypto.randomUUID();
+        const bukti_files = picker.count() ? await picker.upload(uploadId, (t) => { msg.textContent = t; }) : [];
+
+        const payload = Object.fromEntries(new FormData(form).entries());
+        Object.keys(payload).forEach((k) => { if (payload[k] === '') payload[k] = null; });
+        if (transform) transform(payload);
+        payload.bukti_files = bukti_files;
+
+        const { error } = await sb.from(table).insert(payload);
+        if (error) throw new Error(error.message);
+
+        form.reset();
+        picker.clear();
+        msg.textContent = okText;
+        msg.className = 'ok';
+      } catch (err) {
+        msg.textContent = 'Gagal mengirim laporan. Silakan coba lagi. (' + err.message + ')';
+        msg.className = 'err';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = btnText;
+      }
     });
   }
 
-  async function uploadFiles(uploadId) {
-    const uploaded = [];
-    for (let i = 0; i < selectedFiles.length; i++) {
-      const f = selectedFiles[i];
-      msg.textContent = `Mengunggah file ${i + 1} dari ${selectedFiles.length}...`;
+  bindForm({
+    formId: 'reportForm', table: 'reports',
+    picker: createFilePicker(document.getElementById('buktiInput'), document.getElementById('fileList')),
+    btnId: 'submitBtn', msgId: 'formMsg', btnText: 'Kirim Laporan',
+    okText: 'Laporan berhasil dikirim. Terima kasih atas kepedulianmu.',
+  });
 
-      const fd = new FormData();
-      fd.append('file', f);
-      fd.append('uploadId', uploadId);
+  bindForm({
+    formId: 'selfForm', table: 'self_reports',
+    picker: createFilePicker(document.getElementById('sBuktiInput'), document.getElementById('sFileList')),
+    btnId: 'sSubmitBtn', msgId: 'sFormMsg', btnText: 'Kirim Laporan Mandiri',
+    okText: 'Laporan mandiri berhasil dikirim. Terima kasih sudah melapor.',
+    transform: (p) => {
+      p.estimasi_nilai = p.estimasi_nilai === null ? null : Number(p.estimasi_nilai);
+      p.pernyataan_benar = true; // checkbox wajib dicentang (required)
+    },
+  });
 
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/upload-bukti`, {
-        method: 'POST',
-        headers: { 'apikey': SUPABASE_ANON_KEY },
-        body: fd,
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error('Gagal mengunggah ' + f.name + ': ' + (json.error || res.statusText));
-      uploaded.push({ name: json.name, path: json.path });
-    }
-    return uploaded;
+  // ---------- Tanggal: tidak boleh di masa depan ----------
+  (function () {
+    const d = new Date();
+    const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    document.getElementById('tglTerima').max = today;
+    document.getElementById('tglSerah').max = today;
+  })();
+
+  // ---------- Tab jenis laporan ----------
+  const TAB_INFO = {
+    aduan: {
+      title: 'Sampaikan kronologi pelanggaran yang kamu temukan',
+      desc: 'Untuk melaporkan dugaan pelanggaran yang dilakukan orang lain.',
+    },
+    self: {
+      title: 'Laporkan gratifikasi yang kamu terima',
+      desc: 'Untuk karyawan yang menerima uang, barang, atau fasilitas dari pihak luar (self-report).',
+    },
+  };
+  const tabEls = Array.from(document.querySelectorAll('.tab'));
+
+  function selectTab(name, focus) {
+    if (!TAB_INFO[name]) name = 'aduan';
+    tabEls.forEach((t) => {
+      const on = t.dataset.tab === name;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      if (on && focus) t.focus();
+    });
+    document.getElementById('panel-aduan').hidden = name !== 'aduan';
+    document.getElementById('panel-self').hidden = name !== 'self';
+    document.getElementById('formTitle').textContent = TAB_INFO[name].title;
+    document.getElementById('tabDesc').textContent = TAB_INFO[name].desc;
   }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    msg.textContent = '';
-    msg.className = '';
-    btn.disabled = true;
-    btn.textContent = 'Mengirim...';
-
-    try {
-      const uploadId = crypto.randomUUID();
-      const bukti_files = selectedFiles.length ? await uploadFiles(uploadId) : [];
-
-      const fd = new FormData(form);
-      const payload = Object.fromEntries(fd.entries());
-      payload.bukti_files = bukti_files;
-
-      const { error } = await sb.from('reports').insert(payload);
-      if (error) throw new Error(error.message);
-
-      form.reset();
-      selectedFiles = [];
-      renderFileList();
-      msg.textContent = 'Laporan berhasil dikirim. Terima kasih atas kepedulianmu.';
-      msg.className = 'ok';
-    } catch (err) {
-      msg.textContent = 'Gagal mengirim laporan. Silakan coba lagi. (' + err.message + ')';
-      msg.className = 'err';
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Kirim Laporan';
-    }
+  // Klik tab atau tombol/tautan lain yang punya data-tab (mis. tombol di hero)
+  document.querySelectorAll('[data-tab]').forEach((el) => {
+    el.addEventListener('click', () => selectTab(el.dataset.tab)); // tautan #formaduan tetap men-scroll
   });
+
+  // Navigasi keyboard: panah kiri/kanan, Home, End
+  tabEls.forEach((t, i) => {
+    t.addEventListener('keydown', (e) => {
+      let j = null;
+      if (e.key === 'ArrowRight') j = (i + 1) % tabEls.length;
+      else if (e.key === 'ArrowLeft') j = (i - 1 + tabEls.length) % tabEls.length;
+      else if (e.key === 'Home') j = 0;
+      else if (e.key === 'End') j = tabEls.length - 1;
+      if (j !== null) { e.preventDefault(); selectTab(tabEls[j].dataset.tab, true); }
+    });
+  });
+
+  selectTab(location.hash === '#self' ? 'self' : 'aduan');
 </script>
 
 </body>
